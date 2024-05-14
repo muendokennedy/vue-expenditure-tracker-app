@@ -13,19 +13,31 @@ const transactions = ref([
         { id: 3 , text: 'Book', amount: -10},
         { id: 4 , text: 'Camera', amount: 150}
       ])
-
+// compute the total expenditure
 const total = computed(() => {
   return transactions.value.reduce((accumulator, transaction) => {
     return accumulator + transaction.amount
-  }, 0)
+  }, 0).toFixed(2)
+})
+// compute the total income
+const income = computed(() => {
+  return transactions.value.filter((transaction) => transaction.amount > 0).reduce((accumulator, transaction) => {
+    return accumulator + transaction.amount
+  }, 0).toFixed(2)
 })
 
+// compute the total expenditure
+const expense = computed(() => {
+  return transactions.value.filter((transaction) => transaction.amount < 0).reduce((accumulator, transaction) => {
+    return accumulator + transaction.amount
+  }, 0).toFixed(2)
+})
 </script>
 <template>
   <div class="container">
     <Header/>
     <Balance :total="total"/>
-    <IncomeExpenses/>
+    <IncomeExpenses :income="income" :expense="expense"/>
     <TransactionList :transactions="transactions"/>
     <AddTransaction/>
   </div>
