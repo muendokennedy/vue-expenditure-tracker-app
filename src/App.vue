@@ -6,16 +6,19 @@ import TransactionList from './components/TransactionList.vue'
 import AddTransaction from './components/AddTransaction.vue'
 import { useToast } from 'vue-toastification'
 
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
 const toast = useToast()
 
-const transactions = ref([
-        { id: 1 , text: 'Flower', amount: -19.9},
-        { id: 2 , text: 'Salary', amount: 299.7},
-        { id: 3 , text: 'Book', amount: -10},
-        { id: 4 , text: 'Camera', amount: 150}
-      ])
+const transactions = ref([])
+
+onMounted(() => {
+  const savedTransactions = JSON.parse(localStorage.getItem('transactions'))
+
+  if(savedTransactions){
+    transactions.value = savedTransactions
+  }
+})
 // compute the total expenditure
 const total = computed(() => {
   return transactions.value.reduce((accumulator, transaction) => {
@@ -43,11 +46,29 @@ const handleTransactionSubmitted = (data) => {
     text: data.text,
     amount: data.amount
   })
+
+  savedTransactionsToLocalStorage()
+
   toast.success('Transaction added successfully')
 }
 // Generate the unique id
 const generateUniqueId = () => {
   return Math.floor(Math.random() * 1000000)
+}
+// Delete a transaction
+const handleTransactionDeleted = (id) => {
+  transactions.value = transactions.value.filter((transaction) => (
+    transaction.id !== id
+  ))
+
+  savedTransactionsToLocalStorage()
+  
+  toast.success('Transaction deleted successfully')
+}
+
+// Save to local storage
+const savedTransactionsToLocalStorage = () => {
+  localStorage.setItem('transactions', JSON.stringify(transactions.value))
 }
 </script>
 <template>
@@ -55,7 +76,7 @@ const generateUniqueId = () => {
     <Header/>
     <Balance :total="+total"/>
     <IncomeExpenses :income="+income" :expenses="+expenses"/>
-    <TransactionList :transactions="transactions"/>
+    <TransactionList :transactions="transactions" @transactionDeleted="handleTransactionDeleted"/>
     <AddTransaction @transactionSubmitted="handleTransactionSubmitted"/>
   </div>
 </template>
